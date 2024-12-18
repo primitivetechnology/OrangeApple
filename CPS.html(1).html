@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f4f4f4;
+            }
+            .counter {
+                font-size: 24px;
+                margin: 10px 0;
+            }
+            .cps {
+                font-size: 18px;
+                color: #555;
+            }
+            .section {
+                margin: 20px;
+                padding: 15px;
+                background: #ffffff;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                width: 300px;
+                text-align: center;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+                margin-top: 20px;
+                cursor: pointer;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .timer {
+                font-size: 24px;
+                margin-top: 20px;
+            }
+            .button-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .button-container button {
+                margin-bottom: 10px;
+            }
+        </style>
+</head>
+<body>
+        <h1>Click Tracker with Timer</h1>
+
+
+        <div class="section">
+            <h2>Right Clicks</h2>
+            <div class="counter">Right Clicks: <span id="rightClickCount">0</span></div>
+            <div class="cps">Right CPS: <span id="rightCpsCount">0</span></div>
+        </div>
+
+
+        <div class="section">
+            <h2>Left Clicks</h2>
+            <div class="counter">Left Clicks: <span id="leftClickCount">0</span></div>
+            <div class="cps">Left CPS: <span id="leftCpsCount">0</span></div>
+        </div>
+
+
+        <div class="button-container">
+            <button id="resetButton">Reset</button>
+            <button id="pauseButton">Resume</button>
+        </div>
+
+
+        <div class="timer">
+            Timer: <span id="gameTimer">0</span> seconds
+        </div>
+
+
+        <script>
+            let rightClickCount = 0;
+            let leftClickCount = 0;
+            let rightStartTime = null;
+            let leftStartTime = null;
+
+
+            let timer = 0;
+            let timerInterval = null;
+            let isPaused = true;
+
+
+            // Function to start the timer
+            function startTimer() {
+                if (!timerInterval) {
+                    timerInterval = setInterval(() => {
+                        if (!isPaused) {
+                            timer++;
+                            document.getElementById("gameTimer").textContent = timer;
+                        }
+                    }, 1000); // Update every second
+                }
+            }
+
+
+            // Function to pause/resume the timer
+            document.getElementById("pauseButton").addEventListener("click", (e) => {
+                e.stopPropagation(); // Prevent the click from being counted as a left-click
+                isPaused = !isPaused;
+                document.getElementById("pauseButton").textContent = isPaused ? "Resume" : "Pause";
+                if (!isPaused) {
+                    startTimer(); // Start the timer when resumed
+                }
+            });
+
+
+            // Function to update the display
+            function updateDisplay() {
+                const rightClickCountElement = document.getElementById("rightClickCount");
+                const rightCpsElement = document.getElementById("rightCpsCount");
+                const leftClickCountElement = document.getElementById("leftClickCount");
+                const leftCpsElement = document.getElementById("leftCpsCount");
+
+
+                const rightElapsedTime = rightStartTime ? (Date.now() - rightStartTime) / 1000 : 0; // seconds
+                const leftElapsedTime = leftStartTime ? (Date.now() - leftStartTime) / 1000 : 0; // seconds
+
+
+                rightClickCountElement.textContent = rightClickCount;
+                rightCpsElement.textContent = rightElapsedTime > 0 ? (rightClickCount / rightElapsedTime).toFixed(2) : "0";
+
+
+                leftClickCountElement.textContent = leftClickCount;
+                leftCpsElement.textContent = leftElapsedTime > 0 ? (leftClickCount / leftElapsedTime).toFixed(2) : "0";
+            }
+
+
+            // Event listener for right clicks
+            document.addEventListener("contextmenu", (e) => {
+                e.preventDefault(); // Prevent default right-click menu
+                if (rightStartTime === null) {
+                    rightStartTime = Date.now(); // Start timer on first right-click
+                }
+                rightClickCount++;
+                updateDisplay();
+            });
+
+
+            // Event listener for left clicks
+            document.addEventListener("click", (e) => {
+                if (e.target !== document.getElementById("pauseButton") && e.target !== document.getElementById("resetButton")) {
+                    if (leftStartTime === null) {
+                        leftStartTime = Date.now(); // Start timer on first left-click
+                    }
+                    leftClickCount++;
+                    updateDisplay();
+                }
+            });
+
+
+            // Reset functionality
+            document.getElementById("resetButton").addEventListener("click", (e) => {
+                e.stopPropagation(); // Prevent counting as a left click
+                rightClickCount = 0;
+                leftClickCount = 0;
+                rightStartTime = null;
+                leftStartTime = null;
+                timer = 0;
+                document.getElementById("gameTimer").textContent = timer;
+                updateDisplay();
+            });
+
+
+            // Start the timer (paused by default)
+            startTimer();
+        </script>
+</body>
+</html>
